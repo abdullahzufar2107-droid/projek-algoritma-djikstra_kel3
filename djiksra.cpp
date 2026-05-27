@@ -1,0 +1,301 @@
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <string>
+#include <iomanip>
+#include <limits>
+#include <algorithm>
+#include <sstream>
+
+using namespace std;
+
+// ============================================================
+//  STRUCT
+// ============================================================
+
+struct Edge {
+    int   tujuan;
+    float jarak;
+    float waktu;
+};
+
+struct Node {
+    string nama;
+    string kode;
+};
+
+// ============================================================
+//  KONSTANTA & VARIABEL GLOBAL
+// ============================================================
+
+const float INF = numeric_limits<float>::infinity();
+
+int                  jumlahNode;
+int                  jumlahEdge;
+vector<Node>         nodes;
+vector<vector<Edge>> graf;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ----- MODE MANUAL -----
+void inputGrafManual() {
+    cout << "\n";
+    cetakGaris('-', 65);
+    cout << "  MODE MANUAL: Anda menentukan sendiri jumlah edge\n";
+    cout << "  dan memasukkan data setiap edge satu per satu.\n";
+    cetakGaris('-', 65);
+
+    cout << "\n  Referensi nomor node:\n";
+    cetakGaris('-', 55);
+    for (int i = 0; i < jumlahNode; i++) {
+        cout << "  [" << i << "] " << nodes[i].kode
+             << " - " << nodes[i].nama << "\n";
+    }
+    cetakGaris('-', 55);
+
+    cout << "\n  Petunjuk pengisian edge:\n";
+    cout << "  - Masukkan nomor node asal dan tujuan (lihat referensi di atas)\n";
+    cout << "  - Masukkan jarak antar node dalam satuan km\n";
+    cout << "  - Masukkan waktu tempuh dalam satuan menit\n";
+    cout << "  - Setiap edge otomatis berlaku dua arah (A ke B = B ke A)\n";
+    cout << "  - Edge duplikat akan dilewati otomatis\n";
+    cout << "\n  Contoh: node asal=0, tujuan=1, jarak=2.5, waktu=7\n";
+    cout << "          artinya jalur dari " << nodes[0].kode
+         << " ke " << nodes[1].kode
+         << " sejauh 2.5 km ditempuh dalam 7 menit\n\n";
+
+    jumlahEdge = inputInt("  Masukkan jumlah edge yang ingin diisi : ", 1, 500);
+    cout << "\n";
+
+    int edgeBerhasil = 0;
+    for (int i = 0; i < jumlahEdge; i++) {
+        cout << "  -- Edge ke-" << (i + 1) << " dari " << jumlahEdge << " --\n";
+
+        int asal, tujuan;
+        float jarak, waktu;
+
+        asal = inputInt(
+            "  Node asal   [0-" + to_string(jumlahNode - 1) + "] : ",
+            0, jumlahNode - 1);
+
+        while (true) {
+            tujuan = inputInt(
+                "  Node tujuan [0-" + to_string(jumlahNode - 1) + "] : ",
+                0, jumlahNode - 1);
+            if (tujuan != asal) break;
+            cout << "  [!] Node tujuan tidak boleh sama dengan node asal. Coba lagi.\n";
+        }
+
+        // Cek duplikat
+        bool duplikat = false;
+        for (auto& e : graf[asal]) {
+            if (e.tujuan == tujuan) { duplikat = true; break; }
+        }
+        if (duplikat) {
+            cout << "  [!] Edge " << nodes[asal].kode << " <-> "
+                 << nodes[tujuan].kode
+                 << " sudah ada sebelumnya. Edge ini dilewati.\n\n";
+            continue;
+        }
+
+        jarak = inputFloat("  Jarak (km)    contoh: 2.5  -> ", 0.1f);
+        waktu = inputFloat("  Waktu (menit) contoh: 7    -> ", 0.1f);
+        cout << "\n";
+
+        graf[asal].push_back({tujuan, jarak, waktu});
+        graf[tujuan].push_back({asal,  jarak, waktu});
+        edgeBerhasil++;
+    }
+
+    jumlahEdge = edgeBerhasil;
+    cout << "  [OK] Total edge berhasil ditambahkan: " << jumlahEdge << "\n\n";
+}
+
+// ----- MODE OTOMATIS (DIPANDU) -----
+void inputGrafOtomatis() {
+    cout << "\n";
+    cetakGaris('-', 65);
+    cout << "  MODE DIPANDU: Program akan menanyakan satu per satu\n";
+    cout << "  setiap kemungkinan pasangan node. Anda cukup menjawab\n";
+    cout << "  y (ada jalur) atau n (tidak ada jalur).\n";
+    cetakGaris('-', 65);
+
+    cout << "\n  Petunjuk:\n";
+    cout << "  - Program menampilkan pasangan node secara berurutan\n";
+    cout << "  - Jawab 'y' jika ada jalur langsung antara dua node tersebut\n";
+    cout << "  - Jawab 'n' jika tidak ada jalur langsung\n";
+    cout << "  - Jika 'y', masukkan jarak (km) dan waktu (menit)\n";
+    cout << "  - Setiap jalur otomatis berlaku dua arah\n";
+    cout << "\n  Contoh: Ada jalur antara [A] Desa dan [B] Persimpangan?\n";
+    cout << "          Jawab 'y', lalu isi jarak=2.0 dan waktu=5\n\n";
+
+    jumlahEdge = 0;
+
+    for (int i = 0; i < jumlahNode; i++) {
+        for (int j = i + 1; j < jumlahNode; j++) {
+            cout << "  Ada jalur antara [" << nodes[i].kode << "] "
+                 << nodes[i].nama
+                 << " <-> [" << nodes[j].kode << "] "
+                 << nodes[j].nama << " ? (y/n) : ";
+
+            char jawab = inputYN("");
+
+            if (jawab == 'y') {
+                float jarak = inputFloat(
+                    "    Jarak (km)    contoh: 2.5  -> ", 0.1f);
+                float waktu = inputFloat(
+                    "    Waktu (menit) contoh: 7    -> ", 0.1f);
+                cout << "\n";
+
+                graf[i].push_back({j, jarak, waktu});
+                graf[j].push_back({i, jarak, waktu});
+                jumlahEdge++;
+            } else {
+                cout << "\n";
+            }
+        }
+    }
+
+    cout << "  [OK] Total edge berhasil ditambahkan: " << jumlahEdge << "\n\n";
+}
+
+// ----- FUNGSI INPUT GRAF UTAMA -----
+void inputGraf() {
+    cetakGaris('=', 65);
+    cout << "  INPUT DATA GRAF\n";
+    cetakGaris('=', 65);
+
+    cout << "\n  Petunjuk:\n";
+    cout << "  - Node adalah setiap lokasi dalam peta evakuasi\n";
+    cout << "  - Contoh node: Desa Terdampak, Jembatan, Posko BPBD, dll\n";
+    cout << "  - Minimal 2 node, maksimal 100 node\n\n";
+
+    jumlahNode = inputInt("  Masukkan jumlah node (lokasi) : ", 2, 100);
+
+    nodes.resize(jumlahNode);
+    graf.resize(jumlahNode);
+
+    cout << "\n  Masukkan data setiap node:\n";
+    cetakGaris('-', 50);
+    cout << "  Petunjuk pengisian node:\n";
+    cout << "  - Kode : 1 huruf kapital sebagai singkatan lokasi\n";
+    cout << "           Contoh: A, B, C, D ...\n";
+    cout << "  - Nama : nama lengkap lokasi tersebut\n";
+    cout << "           Contoh: Desa Terdampak Banjir\n";
+    cetakGaris('-', 50);
+    cout << "\n";
+
+    for (int i = 0; i < jumlahNode; i++) {
+        cout << "  -- Node ke-" << (i + 1) << " --\n";
+        nodes[i].kode = inputString("  Kode (contoh: A) : ");
+        nodes[i].nama = inputString("  Nama lokasi      : ");
+        cout << "\n";
+    }
+
+    cout << "\n";
+    cetakGaris('=', 65);
+    cout << "  PILIH MODE INPUT EDGE (JALUR ANTAR NODE)\n";
+    cetakGaris('=', 65);
+    cout << "\n  [1] Mode Manual  - Anda tentukan sendiri jumlah edge\n";
+    cout << "                     dan isi data setiap edge satu per satu\n";
+    cout << "                     (cocok jika sudah tahu pasti edge mana saja)\n\n";
+    cout << "  [2] Mode Dipandu - Program menanyakan satu per satu\n";
+    cout << "                     semua kemungkinan pasangan node\n";
+    cout << "                     (cocok jika belum hafal kombinasi edge)\n\n";
+
+    int modeInput = inputInt("  Pilihan (1/2) : ", 1, 2);
+
+    if (modeInput == 1) inputGrafManual();
+    else                inputGrafOtomatis();
+}
