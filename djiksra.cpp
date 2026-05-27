@@ -17,11 +17,13 @@ struct Edge {
     int   tujuan;
     float jarak;
     float waktu;
+    bool  aktif = true;
 };
 
 struct Node {
     string nama;
     string kode;
+    bool   terblokir = false;
 };
 
 // ============================================================
@@ -298,4 +300,360 @@ void inputGraf() {
 
     if (modeInput == 1) inputGrafManual();
     else                inputGrafOtomatis();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void tampilGrafASCII() {
+    cout << "\n";
+    cetakGaris('=', 65);
+    cout << "  VISUALISASI GRAF JALUR EVAKUASI\n";
+    cetakGaris('=', 65);
+    cout << "\n";
+
+    bool adaEdge = false;
+    for (int i = 0; i < jumlahNode; i++) {
+        for (auto& e : graf[i]) {
+            if (i < e.tujuan) {
+                adaEdge = true;
+                cout << "  [" << nodes[i].kode << "] "
+                     << nodes[i].nama << "\n";
+                cout << "       |\n";
+                cout << "       +---(";
+                cout << fixed << setprecision(1) << e.jarak << " km / ";
+                cout << fixed << setprecision(1) << e.waktu << " mnt";
+                cout << ")---> [" << nodes[e.tujuan].kode << "] "
+                     << nodes[e.tujuan].nama << "\n\n";
+            }
+        }
+    }
+
+    if (!adaEdge) cout << "  (Tidak ada edge untuk ditampilkan)\n\n";
+
+    cetakGaris('-', 65);
+    cout << "  Ket : [X]                   = Node / Lokasi\n";
+    cout << "        +---(jarak/waktu)--->=  Jalur penghubung (berlaku dua arah)\n";
+    cetakGaris('=', 65);
+    cout << "\n";
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void hitungTotal(const vector<int>& jalur,
+                 float& totalJarak, float& totalWaktu) {
+    totalJarak = 0.0f;
+    totalWaktu = 0.0f;
+    for (int i = 0; i < (int)jalur.size() - 1; i++) {
+        int u = jalur[i], v = jalur[i + 1];
+        for (auto& e : graf[u]) {
+            if (e.tujuan == v) {
+                totalJarak += e.jarak;
+                totalWaktu += e.waktu;
+                break;
+            }
+        }
+    }
+}
+
+
+
+
+
+void tampilJalur(const vector<int>& jalur, int mode,
+                 float alpha, float beta) {
+    cout << "\n";
+    cetakGaris('=', 60);
+    cout << "  JALUR EVAKUASI DITEMUKAN\n";
+    if      (mode == 1) cout << "  Mode : Jarak Terpendek\n";
+    else if (mode == 2) cout << "  Mode : Waktu Tercepat\n";
+    else {
+        cout << "  Mode : Gabungan Optimal";
+        cout << " (alpha=" << fixed << setprecision(1) << alpha;
+        cout << ", beta="  << fixed << setprecision(1) << beta << ")\n";
+    }
+    cetakGaris('=', 60);
+
+    if (jalur.empty()) {
+        cout << "\n  [!] Tidak ada jalur yang dapat ditemukan.\n";
+        cout << "      Periksa apakah node sumber dan tujuan terhubung.\n\n";
+        cetakGaris('=', 60);
+        return;
+    }
+
+    float totalJarak = 0.0f, totalWaktu = 0.0f;
+    cout << "\n";
+
+    for (int i = 0; i < (int)jalur.size() - 1; i++) {
+        int   u = jalur[i], v = jalur[i + 1];
+        float j = 0.0f,     w = 0.0f;
+        for (auto& e : graf[u]) {
+            if (e.tujuan == v) { j = e.jarak; w = e.waktu; break; }
+        }
+        totalJarak += j;
+        totalWaktu += w;
+
+        cout << "  [" << nodes[u].kode << "] "
+             << "---(";
+        cout << fixed << setprecision(1) << j << " km, ";
+        cout << fixed << setprecision(1) << w << " mnt)";
+        cout << "---> [" << nodes[v].kode << "]\n";
+    }
+
+    float bobotGab = (alpha * totalJarak) + (beta * totalWaktu);
+
+    cout << "\n";
+    cetakGaris('-', 60);
+    cout << "  Total Jarak    : " << fixed << setprecision(1) << totalJarak << " km\n";
+    cout << "  Total Waktu    : " << fixed << setprecision(1) << totalWaktu << " menit\n";
+    cout << "  Bobot Gabungan : " << fixed << setprecision(2) << bobotGab << "\n";
+    cetakGaris('=', 60);
+    cout << "\n";
+}
+
+
+
+
+
+void tampilTabelMinimum(int sumber,
+                         const vector<int>& p1,
+                         const vector<int>& p2,
+                         const vector<int>& p3) {
+    cout << "\n";
+    cetakGaris('=', 72);
+    cout << "  TABEL JARAK MINIMUM DARI NODE ["
+         << nodes[sumber].kode << "] "
+         << nodes[sumber].nama << "\n";
+    cetakGaris('=', 72);
+    cout << "  " << left
+         << setw(6)  << "Node"
+         << setw(26) << "Nama Lokasi"
+         << setw(13) << "Jarak(km)"
+         << setw(13) << "Waktu(mnt)"
+         << "Bobot Gab.\n";
+    cetakGaris('-', 72);
+
+    for (int i = 0; i < jumlahNode; i++) {
+        vector<int> jalurG = rekonstruksiJalur(sumber, i, p3);
+
+        float tJg = 0.0f, tWg = 0.0f;
+        hitungTotal(jalurG, tJg, tWg);
+        float bg = (0.5f * tJg) + (0.5f * tWg);
+
+        string nama = nodes[i].nama;
+        if (nama.length() > 24) nama = nama.substr(0, 22) + "..";
+
+        cout << "  " << left << setw(6) << nodes[i].kode
+                              << setw(26) << nama;
+
+        if (jalurG.empty() && i != sumber) {
+            cout << setw(13) << "N/A"
+                 << setw(13) << "N/A"
+                 << "N/A\n";
+        } else {
+            cout << setw(13) << fixed << setprecision(1) << tJg
+                 << setw(13) << fixed << setprecision(1) << tWg
+                 << fixed    << setprecision(2) << bg << "\n";
+        }
+    }
+    cetakGaris('=', 72);
+    cout << "\n";
+}
+
+
+
+
+
+void tampilPerbandinganTigaMode(int sumber, int tujuan,
+                                 float alpha, float beta,
+                                 const vector<int>& p1,
+                                 const vector<int>& p2,
+                                 const vector<int>& p3) {
+    vector<int> j1 = rekonstruksiJalur(sumber, tujuan, p1);
+    vector<int> j2 = rekonstruksiJalur(sumber, tujuan, p2);
+    vector<int> j3 = rekonstruksiJalur(sumber, tujuan, p3);
+
+    float jarak1=0,waktu1=0, jarak2=0,waktu2=0, jarak3=0,waktu3=0;
+    hitungTotal(j1, jarak1, waktu1);
+    hitungTotal(j2, jarak2, waktu2);
+    hitungTotal(j3, jarak3, waktu3);
+
+    float bg1 = (alpha * jarak1) + (beta * waktu1);
+    float bg2 = (alpha * jarak2) + (beta * waktu2);
+    float bg3 = (alpha * jarak3) + (beta * waktu3);
+
+    auto buatStrJalur = [](const vector<int>& jl,
+                            const vector<Node>& nd) -> string {
+        if (jl.empty()) return "Tdk ada jalur";
+        string s;
+        for (int i = 0; i < (int)jl.size(); i++) {
+            if (i > 0) s += "-";
+            s += nd[jl[i]].kode;
+        }
+        return s;
+    };
+
+    auto potong = [](string s, int maks) -> string {
+        if ((int)s.length() > maks) return s.substr(0, maks - 2) + "..";
+        return s;
+    };
+
+    auto fmtFloat = [](float v, int presisi) -> string {
+        ostringstream oss;
+        oss << fixed << setprecision(presisi) << v;
+        return oss.str();
+    };
+
+    string sj1 = potong(buatStrJalur(j1, nodes), 16);
+    string sj2 = potong(buatStrJalur(j2, nodes), 16);
+    string sj3 = potong(buatStrJalur(j3, nodes), 16);
+
+    cout << "\n";
+    cetakGaris('=', 74);
+    cout << "  PERBANDINGAN HASIL TIGA MODE PENCARIAN\n";
+    cout << "  Dari [" << nodes[sumber].kode << "] " << nodes[sumber].nama
+         << "  -->  [" << nodes[tujuan].kode << "] " << nodes[tujuan].nama << "\n";
+    cetakGaris('=', 74);
+    cout << "  " << left
+         << setw(18) << "Keterangan"
+         << setw(18) << "MODE 1 (Jarak)"
+         << setw(18) << "MODE 2 (Waktu)"
+         << "MODE 3 (Gabungan)\n";
+    cetakGaris('-', 74);
+    cout << "  " << left << setw(18) << "Jalur"
+         << setw(18) << sj1 << setw(18) << sj2 << sj3 << "\n";
+    cout << "  " << left << setw(18) << "Total Jarak"
+         << setw(18) << (fmtFloat(jarak1, 1) + " km")
+         << setw(18) << (fmtFloat(jarak2, 1) + " km")
+         << (fmtFloat(jarak3, 1) + " km") << "\n";
+    cout << "  " << left << setw(18) << "Total Waktu"
+         << setw(18) << (fmtFloat(waktu1, 1) + " mnt")
+         << setw(18) << (fmtFloat(waktu2, 1) + " mnt")
+         << (fmtFloat(waktu3, 1) + " mnt") << "\n";
+    cout << "  " << left << setw(18) << "Bobot Gabungan"
+         << setw(18) << fmtFloat(bg1, 2)
+         << setw(18) << fmtFloat(bg2, 2)
+         << fmtFloat(bg3, 2) << "\n";
+    cetakGaris('-', 74);
+
+    string rekomendasi = "Tidak ada jalur yang tersedia";
+    float  minBG       = INF;
+    if (!j1.empty() && bg1 < minBG) { minBG = bg1; rekomendasi = "MODE 1 - Jarak Terpendek"; }
+    if (!j2.empty() && bg2 < minBG) { minBG = bg2; rekomendasi = "MODE 2 - Waktu Tercepat";  }
+    if (!j3.empty() && bg3 < minBG) { minBG = bg3; rekomendasi = "MODE 3 - Gabungan Optimal";}
+
+    cout << "\n  >> Rekomendasi : " << rekomendasi << "\n";
+    cetakGaris('=', 74);
+    cout << "\n";
 }
