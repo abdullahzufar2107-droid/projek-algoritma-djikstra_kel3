@@ -300,6 +300,7 @@ void inputGraf() {
 
     if (modeInput == 1) inputGrafManual();
     else                inputGrafOtomatis();
+<<<<<<< HEAD
 }
 
 
@@ -929,3 +930,6 @@ void tampilPerbandinganTigaMode(int sumber, int tujuan,
     cout << "\n";
 }
 >>>>>>> fc9cde2554590dcb8743c108ffb1568e819a6960
+=======
+}
+>>>>>>> parent of ccc6a29 (Implementasi Algoritma Dijkstra Inti)
