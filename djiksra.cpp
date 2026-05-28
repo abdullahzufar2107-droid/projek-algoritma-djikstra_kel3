@@ -451,62 +451,6 @@ vector<int> rekonstruksiJalur(int sumber, int tujuan,
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 void hitungTotal(const vector<int>& jalur,
                  float& totalJarak, float& totalWaktu) {
     totalJarak = 0.0f;
