@@ -9,6 +9,13 @@
 
 using namespace std;
 
+// KODE WARNA ANSI
+#define RESET   "\033[0m"
+#define MERAH   "\033[31m"
+#define KUNING  "\033[33m"
+#define CYAN    "\033[36m"
+#define HIJAU   "\033[32m"
+
 // ============================================================
 //  STRUCT
 // ============================================================
@@ -37,7 +44,7 @@ int                  jumlahEdge;
 vector<Node>         nodes;
 vector<vector<Edge>> graf;
 
-// FUNGSI INPUT AMAN
+// FUNGSI INPUT
 int inputInt(const string& pesan, int minVal, int maxVal) {
     int nilai;
     while (true) {
@@ -47,10 +54,10 @@ int inputInt(const string& pesan, int minVal, int maxVal) {
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 return nilai;
             }
-            cout << "  [!] Input harus antara " << minVal
-                 << " dan " << maxVal << ". Coba lagi.\n";
+            cout << MERAH << "  [!] Input harus antara " << minVal
+                 << " dan " << maxVal << ". Coba lagi." << RESET << "\n";
         } else {
-            cout << "  [!] Input tidak valid. Masukkan angka bulat. Coba lagi.\n";
+            cout << MERAH << "  [!] Input tidak valid. Masukkan angka bulat. Coba lagi." << RESET << "\n";
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
         }
@@ -66,9 +73,9 @@ float inputFloat(const string& pesan, float minVal) {
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 return nilai;
             }
-            cout << "  [!] Nilai harus >= " << minVal << ". Coba lagi.\n";
+            cout << MERAH << "  [!] Nilai harus >= " << minVal << ". Coba lagi." << RESET << "\n";
         } else {
-            cout << "  [!] Input tidak valid. Masukkan angka. Coba lagi.\n";
+            cout << MERAH << "  [!] Input tidak valid. Masukkan angka. Coba lagi." << RESET << "\n";
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
         }
@@ -85,7 +92,7 @@ char inputYN(const string& pesan) {
             nilai = tolower(nilai);
             if (nilai == 'y' || nilai == 'n') return nilai;
         }
-        cout << "  [!] Input tidak valid. Masukkan y atau n. Coba lagi.\n";
+        cout << MERAH << "  [!] Input tidak valid. Masukkan y atau n. Coba lagi." << RESET << "\n";
         cin.clear();
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
@@ -97,7 +104,7 @@ string inputString(const string& pesan) {
         cout << pesan;
         getline(cin, nilai);
         if (!nilai.empty()) return nilai;
-        cout << "  [!] Input tidak boleh kosong. Coba lagi.\n";
+        cout << MERAH << "  [!] Input tidak boleh kosong. Coba lagi." << RESET << "\n";
     }
 }
 
@@ -166,7 +173,7 @@ void inputGrafManual() {
                 "  Node tujuan [0-" + to_string(jumlahNode - 1) + "] : ",
                 0, jumlahNode - 1);
             if (tujuan != asal) break;
-            cout << "  [!] Node tujuan tidak boleh sama dengan node asal. Coba lagi.\n";
+            cout << MERAH << "  [!] Node tujuan tidak boleh sama dengan node asal. Coba lagi." << RESET << "\n";
         }
 
         // Cek duplikat
@@ -175,9 +182,9 @@ void inputGrafManual() {
             if (e.tujuan == tujuan) { duplikat = true; break; }
         }
         if (duplikat) {
-            cout << "  [!] Edge " << nodes[asal].kode << " <-> "
+            cout << MERAH << "  [!] Edge " << nodes[asal].kode << " <-> "
                  << nodes[tujuan].kode
-                 << " sudah ada sebelumnya. Edge ini dilewati.\n\n";
+                 << " sudah ada sebelumnya. Edge ini dilewati." << RESET << "\n\n";
             continue;
         }
 
@@ -428,9 +435,9 @@ vector<int> rekonstruksiJalur(int sumber, int tujuan,
     return jalur;
 }
 
-
-
-
+// ============================================================
+//  HITUNG TOTAL JARAK & WAKTU
+// ============================================================
 
 void hitungTotal(const vector<int>& jalur,
                  float& totalJarak, float& totalWaktu) {
@@ -448,9 +455,9 @@ void hitungTotal(const vector<int>& jalur,
     }
 }
 
-
-
-
+// ============================================================
+//  VISUALISASI 2 — JALUR TERPILIH
+// ============================================================
 
 void tampilJalur(const vector<int>& jalur, int mode,
                  float alpha, float beta) {
@@ -467,8 +474,8 @@ void tampilJalur(const vector<int>& jalur, int mode,
     cetakGaris('=', 60);
 
     if (jalur.empty()) {
-        cout << "\n  [!] Tidak ada jalur yang dapat ditemukan.\n";
-        cout << "      Periksa apakah node sumber dan tujuan terhubung.\n\n";
+        cout << "\n" << MERAH << "  [!] Tidak ada jalur yang dapat ditemukan.\n";
+        cout << "      Periksa apakah node sumber dan tujuan terhubung." << RESET << "\n\n";
         cetakGaris('=', 60);
         return;
     }
@@ -503,9 +510,9 @@ void tampilJalur(const vector<int>& jalur, int mode,
     cout << "\n";
 }
 
-
-
-
+// ============================================================
+//  VISUALISASI 3 — TABEL JARAK MINIMUM
+// ============================================================
 
 void tampilTabelMinimum(int sumber,
                          const vector<int>& p1,
@@ -552,9 +559,9 @@ void tampilTabelMinimum(int sumber,
     cout << "\n";
 }
 
-
-
-
+// ============================================================
+//  VISUALISASI 4 — PERBANDINGAN TIGA MODE
+// ============================================================
 
 void tampilPerbandinganTigaMode(int sumber, int tujuan,
                                  float alpha, float beta,
@@ -634,12 +641,15 @@ void tampilPerbandinganTigaMode(int sumber, int tujuan,
     if (!j2.empty() && bg2 < minBG) { minBG = bg2; rekomendasi = "MODE 2 - Waktu Tercepat";  }
     if (!j3.empty() && bg3 < minBG) { minBG = bg3; rekomendasi = "MODE 3 - Gabungan Optimal";}
 
-    cout << "\n  >> Rekomendasi : " << rekomendasi << "\n";
+    cout << "\n  >> " << HIJAU << "Rekomendasi : " << rekomendasi << RESET << "\n";
     cetakGaris('=', 74);
     cout << "\n";
 }
 
-// INPUT PILIHAN PENCARIAN
+// ============================================================
+//  INPUT PILIHAN PENCARIAN
+// ============================================================
+
 void inputPilihanPencarian(int& sumber, int& tujuan, int& mode,
                             float& alpha, float& beta) {
     cetakGaris('=', 65);
@@ -654,28 +664,29 @@ void inputPilihanPencarian(int& sumber, int& tujuan, int& mode,
     }
     cetakGaris('-', 55);
     cout << "\n  Petunjuk:\n";
-    cout << "  - Node SUMBER adalah lokasi awal titik evakuasi (lokasi bencana)\n";
-    cout << "  - Node TUJUAN adalah lokasi akhir / posko aman\n";
+    cout << "  - Node " << CYAN << "SUMBER" << RESET << " adalah lokasi awal titik evakuasi (lokasi bencana)\n";
+    cout << "  - Node " << CYAN << "TUJUAN" << RESET << " adalah lokasi akhir / posko aman\n";
     cout << "  - Masukkan nomor sesuai daftar di atas\n\n";
 
-    sumber = inputInt("  Nomor node SUMBER (titik start evakuasi) : ",
+    sumber = inputInt("  Nomor node " CYAN "SUMBER" RESET " (titik start evakuasi) : ",
                       0, jumlahNode - 1);
 
     while (true) {
-        tujuan = inputInt("  Nomor node TUJUAN (posko aman)          : ",
+        tujuan = inputInt("  Nomor node " CYAN "TUJUAN" RESET " (posko aman)          : ",
                           0, jumlahNode - 1);
+
         if (tujuan != sumber) break;
-        cout << "  [!] Node tujuan tidak boleh sama dengan node sumber. Coba lagi.\n";
+        cout << MERAH << "  [!] Node tujuan tidak boleh sama dengan node sumber. Coba lagi." << RESET << "\n";
     }
 
     cout << "\n  Pilih Mode Optimasi:\n";
     cetakGaris('-', 55);
-    cout << "  [1] Jarak Terpendek  - Meminimalkan total jarak (km)\n";
+    cout << "  [1] " << KUNING << "Jarak Terpendek" << RESET << "  - Meminimalkan total jarak (km)\n";
     cout << "                         Gunakan jika ingin rute sesingkat mungkin\n";
-    cout << "  [2] Waktu Tercepat   - Meminimalkan total waktu (menit)\n";
+    cout << "  [2] " << KUNING << "Waktu Tercepat" << RESET << "   - Meminimalkan total waktu (menit)\n";
     cout << "                         Gunakan jika kecepatan sampai yang utama\n";
-    cout << "  [3] Gabungan Optimal - Mempertimbangkan jarak DAN waktu sekaligus\n";
-    cout << "                         REKOMENDASI untuk skenario evakuasi\n";
+    cout << "  [3] " << KUNING << "Gabungan Optimal" << RESET << " - Mempertimbangkan jarak DAN waktu sekaligus\n";
+    cout << "                         " << KUNING << "REKOMENDASI" << RESET << " untuk skenario evakuasi\n";
     cetakGaris('-', 55);
 
     mode = inputInt("\n  Pilihan (1/2/3) : ", 1, 3);
@@ -702,7 +713,7 @@ void inputPilihanPencarian(int& sumber, int& tujuan, int& mode,
                 beta = 1.0f - alpha;
                 break;
             }
-            cout << "  [!] Alpha harus antara 0.1 dan 0.9. Coba lagi.\n";
+            cout << MERAH << "  [!] Alpha harus antara 0.1 dan 0.9. Coba lagi." << RESET << "\n";
         }
         cout << "  Menggunakan alpha=" << fixed << setprecision(1) << alpha
              << ", beta=" << fixed << setprecision(1) << beta << "\n";
